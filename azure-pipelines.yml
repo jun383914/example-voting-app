@@ -13,6 +13,45 @@ variables:
   dockerRegistryServiceConnection: '4e128355-cac0-4448-bae6-4f2bdea13e91'
   imageRepository: 'examplevotingapp'
   containerRegistry: 'premiumacrpl.azurecr.io'
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'ado'
+    scriptType: 'batch'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      jobs:
+      
+      - job: build
+      
+        displayName: 'Build image'
+      
+        pool:
+      
+          vmImage: ubuntu-latest
+      
+        steps:
+      
+        - task: AzureCLI@2
+      
+          displayName: 'Update ACR whitelist'
+      
+          inputs:
+      
+            azureSubscription: MyAzureSubscription
+      
+            scriptType: pscore
+      
+            scriptLocation: inlineScript
+      
+            failOnStandardError: true
+      
+            inlineScript: |
+      
+              $ip = Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
+      
+              Write-Host "The IP address of current agent machine is $ip"
+      
+              az acr network-rule add -n premiumACRPL --ip-address $ip
   dockerfilePath: '$(Build.SourcesDirectory)/result/Dockerfile'
   tag: '$(Build.BuildId)'
 
